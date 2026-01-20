@@ -23,20 +23,26 @@ interface InstagramProfile {
 export default function Home() {
   const [showDiscord, setShowDiscord] = useState(false);
   
-  // Re-enabling the live API connection to use the Token and ID provided
-  const { data: profile, isError: discordError } = useQuery<DiscordProfile>({
+  // Check if we have a backend URL configured. 
+  // On Netlify, if VITE_API_URL is not set, we should probably default to static data
+  // because the live API won't work without a backend.
+  const hasBackend = !!import.meta.env.VITE_API_URL || window.location.hostname.includes("replit.dev") || window.location.hostname === "localhost";
+
+  const { data: profile, isError: discordError, isLoading: discordLoading } = useQuery<DiscordProfile>({
     queryKey: ["/api/discord/profile"],
     retry: false,
-    enabled: true, 
+    enabled: hasBackend, 
   });
 
-  const { data: igProfile, isError: igError } = useQuery<InstagramProfile>({
+  const { data: igProfile, isError: igError, isLoading: igLoading } = useQuery<InstagramProfile>({
     queryKey: ["/api/instagram/profile"],
     retry: false,
-    enabled: true,
+    enabled: hasBackend,
   });
 
-  // LOGIC: Prefer live data from API (Token/ID) if available, otherwise fall back to staticData.ts
+  // LOGIC:
+  // 1. If we are on Netlify and NO backend URL is provided, use staticData immediately.
+  // 2. If we have a backend but the request failed or is loading, we handle those states.
   const displayProfile = (profile && !discordError) ? profile : PROFILE_DATA.discord;
   const displayIgProfile = (igProfile && !igError) ? igProfile : PROFILE_DATA.instagram;
 
@@ -47,7 +53,6 @@ export default function Home() {
     <div className="relative min-h-screen bg-black overflow-hidden">
       <SplineScene onSequenceComplete={() => setShowDiscord(true)} />
 
-      {/* Discord Profile Widget */}
       <AnimatePresence>
         {displayProfile && showDiscord && (
           <motion.div
@@ -57,7 +62,6 @@ export default function Home() {
           >
             {/* Discord Card */}
             <div className="glass-panel overflow-hidden rounded-xl border-primary/20 bg-black/60 backdrop-blur-md shadow-2xl">
-              {/* Compact Banner */}
               <div 
                 className="h-12 w-full bg-primary/20 relative" 
                 style={{ 
@@ -73,7 +77,6 @@ export default function Home() {
               </div>
               
               <div className="px-3 pb-3">
-                {/* Smaller Avatar */}
                 <div className="relative -mt-6 mb-2">
                   <img 
                     src={avatarUrl} 
