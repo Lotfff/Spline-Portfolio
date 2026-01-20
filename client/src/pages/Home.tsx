@@ -2,6 +2,7 @@ import { SplineScene } from "../components/SplineScene";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { PROFILE_DATA } from "../lib/staticData";
 
 interface DiscordProfile {
   id: string;
@@ -19,38 +20,25 @@ interface InstagramProfile {
   followers_count: number;
 }
 
-const STATIC_FALLBACK = {
-  discord: {
-    id: "394912002843344898",
-    username: "1c.2",
-    global_name: "Lord",
-    avatar: "https://cdn.discordapp.com/embed/avatars/2.png",
-    banner: null,
-    accent_color: 5814783,
-  },
-  instagram: {
-    username: "lordx679",
-    profile_pic: "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=150&h=150&fit=crop",
-    biography: "Turning impossible ideas into reality.",
-    followers_count: 1337,
-  }
-};
-
 export default function Home() {
   const [showDiscord, setShowDiscord] = useState(false);
   
+  // Re-enabling the live API connection to use the Token and ID provided
   const { data: profile, isError: discordError } = useQuery<DiscordProfile>({
     queryKey: ["/api/discord/profile"],
     retry: false,
+    enabled: true, 
   });
 
   const { data: igProfile, isError: igError } = useQuery<InstagramProfile>({
     queryKey: ["/api/instagram/profile"],
     retry: false,
+    enabled: true,
   });
 
-  const displayProfile = discordError ? STATIC_FALLBACK.discord : profile;
-  const displayIgProfile = igError ? STATIC_FALLBACK.instagram : igProfile;
+  // LOGIC: Prefer live data from API (Token/ID) if available, otherwise fall back to staticData.ts
+  const displayProfile = (profile && !discordError) ? profile : PROFILE_DATA.discord;
+  const displayIgProfile = (igProfile && !igError) ? igProfile : PROFILE_DATA.instagram;
 
   const avatarUrl = displayProfile?.avatar || "https://cdn.discordapp.com/embed/avatars/0.png";
   const bannerUrl = displayProfile?.banner;
