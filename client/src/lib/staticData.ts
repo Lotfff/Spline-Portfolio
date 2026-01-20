@@ -1,9 +1,9 @@
 export const PROFILE_DATA = {
   discord: {
-    id: "0",
+    id: "389146146608513025", // Replace with your actual Discord ID
     username: "Lord",
     global_name: "Lord",
-    avatar: "https://cdn.discordapp.com/embed/avatars/0.png",
+    avatar: "https://cdn.discordapp.com/embed/avatars/2.png",
     banner: null,
     accent_color: 5814783,
   },

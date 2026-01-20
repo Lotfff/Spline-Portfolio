@@ -11,6 +11,9 @@ export default function Home() {
   const avatarUrl = profile.avatar;
   const bannerUrl = profile.banner;
 
+  // You can also use a real Discord avatar if you have the hash
+  // const avatarUrl = `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar_hash}.png`;
+
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
       <SplineScene onSequenceComplete={() => setShowDiscord(true)} />
