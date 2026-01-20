@@ -3,14 +3,30 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
+interface DiscordProfile {
+  id: string;
+  username: string;
+  global_name: string | null;
+  avatar: string | null;
+  banner: string | null;
+  accent_color: number | null;
+}
+
+interface InstagramProfile {
+  username: string;
+  profile_pic: string | null;
+  biography: string | null;
+  followers_count: number;
+}
+
 export default function Home() {
   const [showDiscord, setShowDiscord] = useState(false);
   
-  const { data: profile } = useQuery({
+  const { data: profile } = useQuery<DiscordProfile>({
     queryKey: ["/api/discord/profile"],
   });
 
-  const { data: igProfile } = useQuery({
+  const { data: igProfile } = useQuery<InstagramProfile>({
     queryKey: ["/api/instagram/profile"],
   });
 
