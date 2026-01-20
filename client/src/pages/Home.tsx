@@ -1,18 +1,21 @@
 import { SplineScene } from "../components/SplineScene";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { PROFILE_DATA } from "../lib/staticData";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Home() {
   const [showDiscord, setShowDiscord] = useState(false);
-  const profile = PROFILE_DATA.discord;
-  const igProfile = PROFILE_DATA.instagram;
+  
+  const { data: profile } = useQuery({
+    queryKey: ["/api/discord/profile"],
+  });
 
-  const avatarUrl = profile.avatar;
-  const bannerUrl = profile.banner;
+  const { data: igProfile } = useQuery({
+    queryKey: ["/api/instagram/profile"],
+  });
 
-  // You can also use a real Discord avatar if you have the hash
-  // const avatarUrl = `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar_hash}.png`;
+  const avatarUrl = profile?.avatar || "https://cdn.discordapp.com/embed/avatars/0.png";
+  const bannerUrl = profile?.banner;
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
