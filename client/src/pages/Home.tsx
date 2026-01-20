@@ -19,19 +19,41 @@ interface InstagramProfile {
   followers_count: number;
 }
 
+const STATIC_FALLBACK = {
+  discord: {
+    id: "394912002843344898",
+    username: "1c.2",
+    global_name: "Lord",
+    avatar: "https://cdn.discordapp.com/embed/avatars/2.png",
+    banner: null,
+    accent_color: 5814783,
+  },
+  instagram: {
+    username: "lordx679",
+    profile_pic: "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=150&h=150&fit=crop",
+    biography: "Turning impossible ideas into reality.",
+    followers_count: 1337,
+  }
+};
+
 export default function Home() {
   const [showDiscord, setShowDiscord] = useState(false);
   
-  const { data: profile } = useQuery<DiscordProfile>({
+  const { data: profile, isError: discordError } = useQuery<DiscordProfile>({
     queryKey: ["/api/discord/profile"],
+    retry: false,
   });
 
-  const { data: igProfile } = useQuery<InstagramProfile>({
+  const { data: igProfile, isError: igError } = useQuery<InstagramProfile>({
     queryKey: ["/api/instagram/profile"],
+    retry: false,
   });
 
-  const avatarUrl = profile?.avatar || "https://cdn.discordapp.com/embed/avatars/0.png";
-  const bannerUrl = profile?.banner;
+  const displayProfile = discordError ? STATIC_FALLBACK.discord : profile;
+  const displayIgProfile = igError ? STATIC_FALLBACK.instagram : igProfile;
+
+  const avatarUrl = displayProfile?.avatar || "https://cdn.discordapp.com/embed/avatars/0.png";
+  const bannerUrl = displayProfile?.banner;
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
@@ -39,7 +61,7 @@ export default function Home() {
 
       {/* Discord Profile Widget */}
       <AnimatePresence>
-        {profile && showDiscord && (
+        {displayProfile && showDiscord && (
           <motion.div
             initial={{ opacity: 0, y: -20, x: 20 }}
             animate={{ opacity: 1, y: 0, x: 0 }}
@@ -51,13 +73,13 @@ export default function Home() {
               <div 
                 className="h-12 w-full bg-primary/20 relative" 
                 style={{ 
-                  backgroundColor: profile.accent_color ? `#${profile.accent_color.toString(16).padStart(6, '0')}` : undefined,
+                  backgroundColor: displayProfile.accent_color ? `#${displayProfile.accent_color.toString(16).padStart(6, '0')}` : undefined,
                   backgroundImage: bannerUrl ? `url(${bannerUrl})` : undefined,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
               >
-                {!bannerUrl && !profile.accent_color && (
+                {!bannerUrl && !displayProfile.accent_color && (
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20" />
                 )}
               </div>
@@ -67,7 +89,7 @@ export default function Home() {
                 <div className="relative -mt-6 mb-2">
                   <img 
                     src={avatarUrl} 
-                    alt={profile.username}
+                    alt={displayProfile.username}
                     className="h-14 w-14 rounded-full border-2 border-black bg-black shadow-lg"
                   />
                   <div className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 rounded-full border-2 border-black bg-green-500" />
@@ -76,14 +98,14 @@ export default function Home() {
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <h3 className="text-sm font-bold text-white truncate leading-tight">
-                      {profile.global_name || profile.username}
+                      {displayProfile.global_name || displayProfile.username}
                     </h3>
                     <p className="text-[10px] font-mono text-muted-foreground truncate">
-                      @{profile.username}
+                      @{displayProfile.username}
                     </p>
                   </div>
                   <button 
-                    onClick={() => window.open(`https://discord.com/users/${profile.id}`, '_blank')}
+                    onClick={() => window.open(`https://discord.com/users/${displayProfile.id}`, '_blank')}
                     className="px-2.5 py-1 rounded-full bg-primary text-[10px] font-bold text-black hover:scale-105 transition-transform active:scale-95"
                   >
                     Connect
@@ -93,7 +115,7 @@ export default function Home() {
             </div>
 
             {/* Instagram Card */}
-            {igProfile && (
+            {displayIgProfile && (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -103,14 +125,14 @@ export default function Home() {
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="relative p-[2px] rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
                       <img 
-                        src={igProfile.profile_pic || ""} 
-                        alt={igProfile.username}
+                        src={displayIgProfile.profile_pic || ""} 
+                        alt={displayIgProfile.username}
                         className="h-10 w-10 rounded-full border-2 border-black bg-black"
                       />
                     </div>
                     <div className="min-w-0">
                       <h4 className="text-xs font-bold text-white truncate leading-tight">
-                        @{igProfile.username}
+                        @{displayIgProfile.username}
                       </h4>
                       <p className="text-[9px] text-muted-foreground truncate">
                         Instagram Developer
@@ -118,7 +140,7 @@ export default function Home() {
                     </div>
                   </div>
                   <button 
-                    onClick={() => window.open(`https://instagram.com/${igProfile.username}`, '_blank')}
+                    onClick={() => window.open(`https://instagram.com/${displayIgProfile.username}`, '_blank')}
                     className="px-2 py-1 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-[9px] font-bold text-white hover:scale-105 transition-transform active:scale-95"
                   >
                     Follow
